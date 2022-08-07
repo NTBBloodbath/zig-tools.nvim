@@ -1,14 +1,3 @@
----
-
-title: README
-description: Zig development tools for Neovim
-authors: NTBBloodbath
-categories: zig dev-tools neovim
-created: 2022-08-06
-version: 0.0.11
----
-
-
 # zig-tools.nvim
 
 zig-tools.nvim is a Neovim (>= 0.7.x) plugin that adds some Zig-specific features to Neovim. WIP.

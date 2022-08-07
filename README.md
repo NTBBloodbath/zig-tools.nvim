@@ -34,8 +34,15 @@ _and run_ your project, live _automatic_ rebuild, add/remove/update dependencies
 
 ## Requirements
 
+### System-wide
+
 - Neovim (>= 0.7.x)
 - ripgrep (>= 11.0)
+
+
+### Neovim plugins
+
+- [akinsho/toggleterm.nvim](https://github.com/akinsho/toggleterm.nvim)
 
 
 ## Installation

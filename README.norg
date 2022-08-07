@@ -38,8 +38,12 @@ version: 0.0.11
      {** FAQ} if you have questions about this integration.
 
 ** Requirements
-   - Neovim (>= 0.7.x)
-   - ripgrep (>= 11.0)
+*** System-wide
+    - Neovim (>= 0.7.x)
+    - ripgrep (>= 11.0)
+
+*** Neovim plugins
+    - {akinsho/toggleterm.nvim}[https://github.com/akinsho/toggleterm.nvim]
 
 ** Installation
    You can use your favorite plugins manager to get zig-tools.nvim, we are going to use packer here:

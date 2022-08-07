@@ -6,11 +6,10 @@
 local zig_tools = {}
 
 local config = require("zig-tools.config")
-
 local autocmds = require("zig-tools.autocmds")
 
 zig_tools.setup = function(opts)
-  _G.zigtools_config = config.set(opts or {})
+  config.set(opts or {})
 
   -- Set up zig-tools.nvim autocommand to set up `:Zig` command
   autocmds.setup()

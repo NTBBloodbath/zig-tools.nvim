@@ -37,7 +37,8 @@ commands.build = function()
 	if not is_zig_project() then
 		vim.notify(
 			"[zig-tools.nvim] Tried to run `:Zig build` outside a Zig project. "
-				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library",
+				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library "
+			  .. "or make sure you're currently in your project's root directory",
 			vim.log.levels.ERROR
 		)
 		return
@@ -67,7 +68,8 @@ commands.run = function(file_mode)
 	if cmd == "zig build run" and not is_zig_project() then
 		vim.notify(
 			"[zig-tools.nvim] Tried to run `:Zig run` outside a Zig project. "
-				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library",
+				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library "
+			  .. "or make sure you're currently in your project's root directory",
 			vim.log.levels.ERROR
 		)
 		return
@@ -140,7 +142,8 @@ commands.project.task = function(task_name)
 	if not is_zig_project() then
 		vim.notify(
 			"[zig-tools.nvim] Tried to run `:Zig task` outside a Zig project. "
-				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library",
+				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library "
+			  .. "or make sure you're currently in your project's root directory",
 			vim.log.levels.ERROR
 		)
 		return

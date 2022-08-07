@@ -8,10 +8,9 @@ local autocmds = {}
 local commands = require("zig-tools.commands")
 
 --- Set up ZigTools autocommands group and set `:Zig` command
----@param config table Configuration optiond
-autocmds.setup = function(config)
+autocmds.setup = function()
 	-- Fast return if user does not want to expose commands
-	if not config.expose_commands then
+	if not _G.zigtools_config.expose_commands then
 		return
 	end
 
@@ -20,7 +19,7 @@ autocmds.setup = function(config)
     group = zig_tools_augroup,
     pattern = "*.zig",
     callback = function(args)
-      commands.init(config, args.buf)
+      commands.init(args.buf)
     end,
     desc = "Set up zig-tools.nvim commands",
   })

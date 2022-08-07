@@ -4,9 +4,11 @@
 -- │          that can be found in the LICENSE file.          │
 -- └                                                          ┘
 local commands = {}
-
 commands.project = {}
 commands.zls = {}
+
+---@diagnostic disable
+local config = _G.zigtools_config
 
 local terminal = require("toggleterm.terminal").Terminal
 local terminal_opts = {
@@ -15,10 +17,34 @@ local terminal_opts = {
 	close_on_exit = false,
 }
 
+local function is_zig_project()
+	local build_file = vim.fn.findfile("build.zig", vim.fn.expand("%:p:h") .. ";")
+	return build_file ~= ""
+end
+
+local function get_zig_project_root()
+	if not is_zig_project() then
+		return nil
+	end
+
+	local build_file = vim.fn.findfile("build.zig", vim.fn.expand("%:p:h") .. ";")
+	local project_root = build_file:gsub("/build.zig", "")
+	return project_root
+end
+
 --- Build current project
----@param flags table Extra build flags to be passed to compiler
-commands.build = function(flags)
+commands.build = function()
+	if not is_zig_project() then
+		vim.notify(
+			"[zig-tools.nvim] Tried to run `:Zig build` outside a Zig project. "
+				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library",
+			vim.log.levels.ERROR
+		)
+		return
+	end
+
 	local cmd = "zig build"
+	local flags = config.project.flags.build
 	if not vim.tbl_isempty(flags) then
 		cmd = cmd .. " " .. table.concat(flags, " ")
 	end
@@ -36,6 +62,15 @@ commands.run = function(file_mode)
 	if file_mode then
 		local current_file = vim.api.nvim_buf_get_name(0)
 		cmd = "zig run " .. current_file
+	end
+
+	if cmd == "zig build run" and not is_zig_project() then
+		vim.notify(
+			"[zig-tools.nvim] Tried to run `:Zig run` outside a Zig project. "
+				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library",
+			vim.log.levels.ERROR
+		)
+		return
 	end
 
 	local run = terminal:new(vim.tbl_extend("force", terminal_opts, {
@@ -88,10 +123,9 @@ commands.check = function(files)
 		local check = terminal:new(vim.tbl_extend("force", terminal_opts, {
 			cmd = "zig ast-check " .. files[1],
 		}))
-		check:spawn()
 		check:toggle()
 	else
-	  -- We spawn a default terminal with no custom command to send them through `terminal:send(cmd)`
+		-- We spawn a default terminal with no custom command to send them through `terminal:send(cmd)`
 		local check = terminal:new(terminal_opts)
 		check:toggle()
 		for _, file in ipairs(files) do
@@ -100,10 +134,57 @@ commands.check = function(files)
 	end
 end
 
+--- Run a specific project build task
+---@param task_name string? An optional task name
+commands.project.task = function(task_name)
+	if not is_zig_project() then
+		vim.notify(
+			"[zig-tools.nvim] Tried to run `:Zig task` outside a Zig project. "
+				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library",
+			vim.log.levels.ERROR
+		)
+		return
+	end
+
+	local project_root = get_zig_project_root()
+	local build_tasks = vim.fn.systemlist(string.format("cat %s/build.zig", project_root) .. [[ |
+		rg --only-matching 'b\.step\("\w+",\s".*"\);' |
+		  rg --only-matching '"\w+",\s".*"' |
+		    tr -d '"']])
+	local tasks = {}
+
+	-- Avoid using a for loop and iterating over tasks table if it only contains one task
+	-- to gain some small performance improvements
+	if #build_tasks == 1 then
+		local task_tbl = vim.split(build_tasks[1], ", ")
+		tasks = vim.tbl_extend("keep", tasks, { [task_tbl[1]] = task_tbl[2] })
+	else
+		for _, task in ipairs(build_tasks) do
+			local task_tbl = vim.split(task, ", ")
+			tasks = vim.tbl_extend("keep", tasks, { [task_tbl[1]] = task_tbl[2] })
+		end
+	end
+
+	if task_name then
+		if vim.tbl_contains(vim.tbl_keys(tasks), task_name) then
+			local run_task = terminal:new(vim.tbl_extend("force", terminal_opts, {
+				cmd = "zig build " .. task_name .. " " .. table.concat(config.project.flags.build, " "),
+			}))
+			run_task:toggle(50)
+		else
+			local error_msg =
+				string.format("[zig-tools.nvim] Invalid task '%s' provided. Available tasks:\n", task_name)
+			for task, desc in pairs(tasks) do
+				error_msg = error_msg .. string.format("- %s, %s\n", task, desc)
+			end
+			vim.notify(error_msg, vim.log.levels.ERROR)
+		end
+	end
+end
+
 --- Initialize zig-tools.nvim commands
----@param config table zig-tools.nvim configuration
 ---@param bufnr number Zig buffer number
-commands.init = function(config, bufnr)
+commands.init = function(bufnr)
 	local cmds = {
 		build = commands.build,
 		run = commands.run,
@@ -133,9 +214,9 @@ commands.init = function(config, bufnr)
 	if enabled_cmds.checker then
 		cmds = vim.tbl_extend("keep", cmds, { check = commands.check })
 	end
-	-- if enabled_cmds.project.tasks then
-	--   vim.tbl_extend("keep", cmds, {task = commands.project.task})
-	-- end
+	if enabled_cmds.project.tasks then
+		cmds = vim.tbl_extend("keep", cmds, { task = commands.project.task })
+	end
 	-- if enabled_cmds.project.live_reload then
 	--   vim.tbl_extend("keep", cmds, {live_reload = commands.project.live_reload})
 	-- end
@@ -157,7 +238,7 @@ commands.init = function(config, bufnr)
 		if vim.tbl_contains(vim.tbl_keys(cmds), subcmd) then
 			local command = cmds[subcmd]
 			if subcmd == "build" then
-				command(config.project.flags.build)
+				command()
 			elseif subcmd == "run" then
 				if args[1] == "file" then
 					command(true)
@@ -166,13 +247,25 @@ commands.init = function(config, bufnr)
 				end
 			elseif vim.tbl_contains({ "fmt", "check" }, subcmd) then
 				command(args)
+			elseif subcmd == "task" then
+				if #args > 1 then
+					vim.notify(
+						"[zig-tools.nvim] `:Zig` subcommand 'task' only takes one parameter",
+						vim.log.levels.ERROR
+					)
+				else
+					command(args[1])
+				end
 			end
 		else
-			vim.notify("Invalid subcommand '" .. subcmd .. "' provided", vim.log.levels.ERROR)
+			vim.notify(
+				"[zig-tools.nvim] Invalid subcommand '" .. subcmd .. "' provided for `:Zig`",
+				vim.log.levels.ERROR
+			)
 		end
 	end, {
 		nargs = "+",
-		desc = "Zig develooment tools",
+		desc = "Zig development tools",
 	})
 end
 

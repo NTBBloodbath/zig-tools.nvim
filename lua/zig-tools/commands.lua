@@ -8,19 +8,40 @@ local commands = {}
 commands.project = {}
 commands.zls = {}
 
+local terminal = require("toggleterm.terminal").Terminal
+local terminal_opts = {
+	direction = "vertical",
+	auto_scroll = true,
+	close_on_exit = false,
+}
+
 --- Build current project
-commands.build = function()
-	print("zig build")
+---@param flags table Extra build flags to be passed to compiler
+commands.build = function(flags)
+	local cmd = "zig build"
+	if not vim.tbl_isempty(flags) then
+		cmd = cmd .. " " .. table.concat(flags, " ")
+	end
+
+	local build = terminal:new(vim.tbl_extend("force", terminal_opts, {
+		cmd = cmd,
+	}))
+	build:toggle(50)
 end
 
 --- Run current project or current file if `file_mode` argument is `true`
 ---@param file_mode boolean If should run current file or project
 commands.run = function(file_mode)
+	local cmd = "zig build run"
 	if file_mode then
-		print("zig run")
-	else
-		print("zig build run")
+		local current_file = vim.api.nvim_buf_get_name(0)
+		cmd = "zig run " .. current_file
 	end
+
+	local run = terminal:new(vim.tbl_extend("force", terminal_opts, {
+		cmd = cmd,
+	}))
+	run:toggle(50)
 end
 
 --- Format Zig source code files
@@ -34,11 +55,22 @@ commands.fmt = function(files)
 	-- Avoid using a for loop and iterating over files table if it only contains one file
 	-- to gain some small performance improvements
 	if #files == 1 then
-		print("zig fmt " .. files[1])
+		local fmt = terminal:new(vim.tbl_extend("force", terminal_opts, {
+			cmd = "zig fmt " .. files[1],
+			close_on_exit = true,
+		}))
+		fmt:spawn()
+		fmt:toggle()
 	else
+		-- We spawn a default terminal with no custom command to send them through `terminal:send(cmd)`
+		local fmt = terminal:new(vim.tbl_extend("force", terminal_opts, {
+			close_on_exit = true,
+		}))
+		fmt:toggle()
 		for _, file in ipairs(files) do
-			print("zig fmt " .. file)
+			fmt:send("zig fmt " .. file)
 		end
+		fmt:send("exit")
 	end
 end
 
@@ -53,10 +85,17 @@ commands.check = function(files)
 	-- Avoid using a for loop and iterating over files table if it only contains one file
 	-- to gain some small performance improvements
 	if #files == 1 then
-		print("zig ast-check " .. files[1])
+		local check = terminal:new(vim.tbl_extend("force", terminal_opts, {
+			cmd = "zig ast-check " .. files[1],
+		}))
+		check:spawn()
+		check:toggle()
 	else
+	  -- We spawn a default terminal with no custom command to send them through `terminal:send(cmd)`
+		local check = terminal:new(terminal_opts)
+		check:toggle()
 		for _, file in ipairs(files) do
-			print("zig ast-check " .. file)
+			check:send("zig ast-check " .. file)
 		end
 	end
 end
@@ -65,12 +104,6 @@ end
 ---@param config table zig-tools.nvim configuration
 ---@param bufnr number Zig buffer number
 commands.init = function(config, bufnr)
-	-- Fast return if user does not want to expose commands
-	-- TODO: move this small conditional logic to autocommands module once its made
-	if not config.expose_commands then
-		return
-	end
-
 	local cmds = {
 		build = commands.build,
 		run = commands.run,
@@ -78,7 +111,7 @@ commands.init = function(config, bufnr)
 
 	-- TODO: use this table to conditionally add new entries to cmds table
 	local enabled_cmds = {
-	  formatter = config.formatter.enable,
+		formatter = config.formatter.enable,
 		checker = config.checker.enable,
 		project = {
 			tasks = config.project.build_tasks,
@@ -93,25 +126,25 @@ commands.init = function(config, bufnr)
 		},
 	}
 
-  -- Add opt-in commands if their features are enabled
-  if enabled_cmds.formatter then
-    vim.tbl_extend("keep", cmds, {fmt = commands.fmt})
-  end
-  if enabled_cmds.checker then
-    vim.tbl_extend("keep", cmds, {check = commands.check})
-  end
-  -- if enabled_cmds.project.tasks then
-  --   vim.tbl_extend("keep", cmds, {task = commands.project.task})
-  -- end
-  -- if enabled_cmds.project.live_reload then
-  --   vim.tbl_extend("keep", cmds, {live_reload = commands.project.live_reload})
-  -- end
-  -- if enabled_cmds.integrations.zls.hints then
-  --   vim.tbl_extend("keep", cmds, {hints = commands.zls.hints})
-  -- end
-  -- if enabled_cmds.integrations.zls.management then
-  --   vim.tbl_extend("keep", cmds, {install = commands.zls.install})
-  -- end
+	-- Add opt-in commands if their features are enabled
+	if enabled_cmds.formatter then
+		cmds = vim.tbl_extend("keep", cmds, { fmt = commands.fmt })
+	end
+	if enabled_cmds.checker then
+		cmds = vim.tbl_extend("keep", cmds, { check = commands.check })
+	end
+	-- if enabled_cmds.project.tasks then
+	--   vim.tbl_extend("keep", cmds, {task = commands.project.task})
+	-- end
+	-- if enabled_cmds.project.live_reload then
+	--   vim.tbl_extend("keep", cmds, {live_reload = commands.project.live_reload})
+	-- end
+	-- if enabled_cmds.integrations.zls.hints then
+	--   vim.tbl_extend("keep", cmds, {hints = commands.zls.hints})
+	-- end
+	-- if enabled_cmds.integrations.zls.management then
+	--   vim.tbl_extend("keep", cmds, {install = commands.zls.install})
+	-- end
 
 	-- NOTE: we use buffer variant as we are going to set commands by using
 	--       an autocommand on BufEnter event to make Zig commands only
@@ -124,16 +157,16 @@ commands.init = function(config, bufnr)
 		if vim.tbl_contains(vim.tbl_keys(cmds), subcmd) then
 			local command = cmds[subcmd]
 			if subcmd == "build" then
-  			command()
-  		elseif subcmd == "run" then
-  		  if args[1] == "file" then
-  		    command(true)
-  		  else
-  		    command(false)
-  		  end
-  		elseif vim.tbl_contains({"fmt", "check"}, subcmd) then
-  		  command(args)
-  		end
+				command(config.project.flags.build)
+			elseif subcmd == "run" then
+				if args[1] == "file" then
+					command(true)
+				else
+					command(false)
+				end
+			elseif vim.tbl_contains({ "fmt", "check" }, subcmd) then
+				command(args)
+			end
 		else
 			vim.notify("Invalid subcommand '" .. subcmd .. "' provided", vim.log.levels.ERROR)
 		end

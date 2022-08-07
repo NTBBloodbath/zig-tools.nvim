@@ -141,7 +141,7 @@ commands.check = function(files)
 	end
 end
 
---- Run a specific project build task
+--- Run a specific project build task, open a prompt if `task_name` parameter is `nil`
 ---@param task_name string? An optional task name
 commands.project.task = function(task_name)
 	if not is_zig_project() then
@@ -208,7 +208,7 @@ commands.project.task = function(task_name)
 	end
 end
 
---- Initialize zig-tools.nvim commands
+--- Initialize zig-tools.nvim commands on `bufnr` buffer
 ---@param bufnr number Zig buffer number
 commands.init = function(bufnr)
 	local cmds = {
@@ -266,10 +266,22 @@ commands.init = function(bufnr)
 			if subcmd == "build" then
 				command()
 			elseif subcmd == "run" then
+				if #args > 1 then
+					vim.notify(
+						"[zig-tools.nvim] `:Zig` subcommand 'run' only takes one parameter",
+						vim.log.levels.ERROR
+					)
+					return
+				end
 				if args[1] == "file" then
 					command(true)
-				else
+				elseif args[1] == nil then
 					command(false)
+				else
+					vim.notify(
+						"[zig-tools.nvim] Invalid parameter '" .. args[1] .. "' passed to `:Zig run` subcommand",
+						vim.log.levels.ERROR
+					)
 				end
 			elseif vim.tbl_contains({ "fmt", "check" }, subcmd) then
 				command(args)
@@ -279,9 +291,9 @@ commands.init = function(bufnr)
 						"[zig-tools.nvim] `:Zig` subcommand 'task' only takes one parameter",
 						vim.log.levels.ERROR
 					)
-				else
-					command(args[1])
+					return
 				end
+				command(args[1])
 			end
 		else
 			vim.notify(

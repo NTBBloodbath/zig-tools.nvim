@@ -59,6 +59,7 @@ version: 0.0.11
 ** FAQ
    > Last design mantra says that zig-tools.nvim is not going to get in my way but it can also
    > manage zls installation. How does it make sense?
+
    zig-tools.nvim `zls` management works pretty differently from Neovim plugins like lsp-installer.
    That means, zig-tools.nvim will only download `zls` from your chosen installation method (gh
    releases or build from source) and then move `zls` binary to your `PATH` so you can set up `zls`

@@ -28,7 +28,12 @@ local function get_zig_project_root()
 	end
 
 	local build_file = vim.fn.findfile("build.zig", vim.fn.expand("%:p:h") .. ";")
-	local project_root = build_file:gsub("/build.zig", "")
+	local project_root
+	if build_file == "build.zig" then
+		project_root = "./"
+	else
+		project_root = build_file:gsub("/build.zig", "")
+	end
 	return project_root
 end
 
@@ -38,7 +43,7 @@ commands.build = function()
 		vim.notify(
 			"[zig-tools.nvim] Tried to run `:Zig build` outside a Zig project. "
 				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library "
-			  .. "or make sure you're currently in your project's root directory",
+				.. "or make sure you're currently in your project's root directory",
 			vim.log.levels.ERROR
 		)
 		return
@@ -69,7 +74,7 @@ commands.run = function(file_mode)
 		vim.notify(
 			"[zig-tools.nvim] Tried to run `:Zig run` outside a Zig project. "
 				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library "
-			  .. "or make sure you're currently in your project's root directory",
+				.. "or make sure you're currently in your project's root directory",
 			vim.log.levels.ERROR
 		)
 		return
@@ -143,7 +148,7 @@ commands.project.task = function(task_name)
 		vim.notify(
 			"[zig-tools.nvim] Tried to run `:Zig task` outside a Zig project. "
 				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library "
-			  .. "or make sure you're currently in your project's root directory",
+				.. "or make sure you're currently in your project's root directory",
 			vim.log.levels.ERROR
 		)
 		return
@@ -168,8 +173,10 @@ commands.project.task = function(task_name)
 		end
 	end
 
+	-- If a task name was provided then try to run it, otherwise open an interactive prompt to select a task
+	local task_names = vim.tbl_keys(tasks)
 	if task_name then
-		if vim.tbl_contains(vim.tbl_keys(tasks), task_name) then
+		if vim.tbl_contains(task_names, task_name) then
 			local run_task = terminal:new(vim.tbl_extend("force", terminal_opts, {
 				cmd = "zig build " .. task_name .. " " .. table.concat(config.project.flags.build, " "),
 			}))
@@ -182,6 +189,22 @@ commands.project.task = function(task_name)
 			end
 			vim.notify(error_msg, vim.log.levels.ERROR)
 		end
+	else
+		vim.ui.select(task_names, {
+			prompt = "Select a task:",
+			format_item = function(item)
+				return item .. ", " .. tasks[item]
+			end,
+		}, function(task)
+			if task then
+				local run_task = terminal:new(vim.tbl_extend("force", terminal_opts, {
+					cmd = "zig build " .. task .. " " .. table.concat(config.project.flags.build, " "),
+				}))
+				run_task:toggle(50)
+			else
+				vim.notify("\n[zig-tools.nvim] Cancelled `:Zig task` command", vim.log.levels.WARN)
+			end
+		end)
 	end
 end
 

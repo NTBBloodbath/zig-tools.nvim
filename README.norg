@@ -37,6 +37,25 @@ version: 0.0.11
    - opt-in LSP integration (with support for inlay hints, thanks to rust-tools.nvim author). See
      {** FAQ} if you have questions about this integration.
 
+** Requirements
+   - Neovim (>= 0.7.x)
+   - ripgrep (>= 11.0)
+
+** Installation
+   You can use your favorite plugins manager to get zig-tools.nvim, we are going to use packer here:
+   @code lua
+   use({
+     "NTBBloodbath/zig-tools.nvim",
+     -- Load zig-tools.nvim only in Zig buffers
+     ft = "zig",
+     config = function()
+       -- Initialize with default config
+       require("zig-tools").setup()
+     end,
+     requires = { "akinsho/toggleterm.nvim" }
+   })
+   @end
+
 ** FAQ
    > Last design mantra says that zig-tools.nvim is not going to get in my way but it can also
    > manage zls installation. How does it make sense?

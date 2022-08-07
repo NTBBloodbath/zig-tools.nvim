@@ -97,6 +97,9 @@ version: 0.0.11
      *Takes arguments?*
      - No
 
+     *Requires a feature?*
+     - No
+
      *Equivalent to*:
      - `zig build`
 
@@ -110,6 +113,9 @@ version: 0.0.11
 
      *Takes arguments?*
      - `file` (optional, literal `file` word)
+
+     *Requires a feature?*
+     - No
 
      *Equivalent to*:
      - `zig run` (when `file` argument is passed)
@@ -129,6 +135,9 @@ version: 0.0.11
 
      *Takes arguments?*
      - Any (optional, current file if no arguments were passed)
+       
+     *Requires a feature?*
+     - `config.formatter.enable = true`
 
      *Equivalent to*:
      - `zig fmt`
@@ -147,6 +156,9 @@ version: 0.0.11
 
      *Takes arguments?*
      - Any (optional, current file if no arguments were passed)
+       
+     *Requires a feature?*
+     - `config.checker.enable = true`
 
      *Equivalent to*:
      - `zig ast-check`
@@ -165,6 +177,9 @@ version: 0.0.11
 
      *Takes arguments?*
      - `task_name` (optional, open a prompt if `task_name` argument is `nil`)
+
+     *Requires a feature?*
+     - `config.project.build_tasks = true`
 
      *Equivalent to*:
      - `zig build <task>`

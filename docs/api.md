@@ -101,6 +101,9 @@ Build current project.
 **Takes arguments?**
 - No
 
+**Requires a feature?**
+- No
+
 **Equivalent to**:
 - `zig build`
 
@@ -116,6 +119,9 @@ Compile and run current project or current `file`.
 
 **Takes arguments?**
 - `file` (optional, literal `file` word)
+
+**Requires a feature?**
+- No
 
 **Equivalent to**:
 - `zig run` (when `file` argument is passed)
@@ -137,6 +143,9 @@ Format Zig source code files.
 
 **Takes arguments?**
 - Any (optional, current file if no arguments were passed)
+  
+**Requires a feature?**
+- `config.formatter.enable = true`
 
 **Equivalent to**:
 - `zig fmt`
@@ -157,6 +166,9 @@ Check for compilation-time errors in Zig source code files.
 
 **Takes arguments?**
 - Any (optional, current file if no arguments were passed)
+  
+**Requires a feature?**
+- `config.checker.enable = true`
 
 **Equivalent to**:
 - `zig ast-check`
@@ -177,6 +189,9 @@ Run a specific project build task.
 
 **Takes arguments?**
 - `task_name` (optional, open a prompt if `task_name` argument is `nil`)
+
+**Requires a feature?**
+- `config.project.build_tasks = true`
 
 **Equivalent to**:
 - `zig build <task>`

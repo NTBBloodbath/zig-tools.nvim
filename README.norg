@@ -62,12 +62,127 @@ version: 0.0.11
    })
    @end
 
+** Configuration
+   zig-tools.nvim comes with sane /and opinionated/ defaults for its configurations. These defaults
+   are the following:
+   @code lua
+   --- zig-tools.nvim configuration
+   ---@type table
+   _G.zigtools_config = {
+     --- Commands to interact with your project compilation
+     ---@type boolean
+     expose_commands = true,
+     --- Format source code
+     ---@type table
+     formatter = {
+       --- Enable formatting, create commands
+       ---@type boolean
+       enable = true,
+       --- Events to run formatter, empty to disable
+       ---@type table
+       events = {},
+     },
+     --- Check for compilation-time errors
+     ---@type table
+     checker = {
+       --- Enable checker, create commands
+       ---@type boolean
+       enable = true,
+       --- Run before trying to compile?
+       ---@type boolean
+       before_compilation = true,
+       --- Events to run checker
+       ---@type table
+       events = {},
+     },
+     --- Project compilation helpers
+     ---@type table
+     project = {
+       --- Extract all build tasks from `build.zig` and expose them
+       ---@type boolean
+       build_tasks = true,
+       --- Enable rebuild project on save? (`:ZigLive` command)
+       ---@type boolean
+       live_reload = true,
+       --- Extra flags to be passed to compiler
+       ---@type table
+       flags = {
+         --- `zig build` flags
+         ---@type table
+         build = {"--prominent-compile-errors"},
+         --- `zig run` flags
+         ---@type table
+         run = {},
+       },
+       --- Automatically compile your project from within Neovim
+       auto_compile = {
+         --- Enable automatic compilation
+         ---@type boolean
+         enable = false,
+         --- Automatically run project after compiling it
+         ---@type boolean
+         run = true,
+       },
+     },
+     --- zig-tools.nvim integrations
+     ---@type table
+     integrations = {
+       --- Third-party Zig packages manager integration
+       ---@type table
+       package_managers = {"zigmod", "gyro"},
+       --- Zig Language Server
+       ---@type table
+       zls = {
+         --- Enable inlay hints
+         ---@type boolean
+         hints = true,
+         --- Manage installation
+         ---@type table
+         management = {
+           --- Enable ZLS management
+           ---@type boolean
+           enable = false,
+           --- Installation path
+           ---@type string
+           install_path = os.getenv("HOME") .. "/.local/bin",
+           --- Source path (where to clone repository when building from source)
+           ---@type string
+           source_path = os.getenv("HOME") .. "/.local/zig/zls",
+         },
+       },
+     }
+   }
+   @end
+
+   > Wanna know why it is a global scope table? Make sure to read the [API]{./docs/api.md} document.
+
+** Usage
+   Once installed and configured, zig-tools.nvim is going to make and run an augroup (`ZigTools`)
+   with an autocommand for `*.zig` files that sets up `:Zig` command on Zig buffers.
+
+   `:Zig` command works with subcommands, that means its usage is something like this:
+   @code vim
+   " Build project
+   :Zig build
+
+   " Run tests
+   :Zig task test
+   @end
+
+   You can then use this command to create mappings, run autocommands, etc on Zig files.
+
+   If you did set `expose_commands` configuration option to `false` in your zig-tools.nvim setup
+   then `:Zig` command is not going to be available. However, you can still use its functionalities
+   by directly using zig-tools.nvim commands API.
+
+   > You can see full `:Zig` command reference in the [API]{./docs/api.md} document.
+
 ** FAQ
    > Last design mantra says that zig-tools.nvim is not going to get in my way but it can also
    > manage zls installation. How does it make sense?
 
    zig-tools.nvim `zls` management works pretty differently from Neovim plugins like lsp-installer.
-   That means, zig-tools.nvim will only download `zls` from your chosen installation method (gh
+   That means, zig-tools.nvim will only get `zls` from your chosen installation method (gh
    releases or build from source) and then move `zls` binary to your `PATH` so you can set up `zls`
    yourself by using `nvim-lspconfig` with no weird abstractions.
 

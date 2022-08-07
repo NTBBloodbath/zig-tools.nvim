@@ -36,11 +36,13 @@ _and run_ your project, live _automatic_ rebuild, add/remove/update dependencies
 
 ### System-wide
 
+- git (optional, required by zls integration)
+- curl / wget (optional, required by zls integration)
 - Neovim (>= 0.7.x)
 - ripgrep (>= 11.0)
 
 
-### Neovim plugins
+### Neovim
 
 - [akinsho/toggleterm.nvim](https://github.com/akinsho/toggleterm.nvim)
 

@@ -1,6 +1,6 @@
 -- ┌                                                          ┐
 -- │  Copyright (c) 2022 NTBBloodbath. All rights reserved.   │
--- │  Use of this source code is governed by an MIT license   │
+-- │  Use of this source code is governed by a GPL3 license   │
 -- │          that can be found in the LICENSE file.          │
 -- └                                                          ┘
 local commands = {}

@@ -27,7 +27,27 @@ configurations.
 - None
 
 **Modules that needs this module to work**:
-- All other modules
+- All other modules except `utils`
+
+
+### utils
+
+This module exposes some utility functions that are specific to Zig development environment.
+
+**Private functions**:
+- None
+
+**Exposed functions**:
+- `is_zig_project() -> boolean`
+    - Check if we are in a Zig project workspace
+- `get_zig_project_root() -> string|nil`
+    - Get Zig project root directory, returns `nil` if not in a Zig project
+
+**Depends on**:
+- `plenary.scandir` module (`nvim-lua/plenary.nvim` plugin)
+
+**Modules that needs this module to work**:
+- `commands` module
 
 
 ### commands
@@ -36,10 +56,7 @@ This module exposes all zig-tools.nvim commands as functions and `:Zig` command 
 these functions.
 
 **Private functions**:
-- `is_zig_project() -> boolean`
-    - Check if user is in a Zig project
-- `get_zig_project_root() -> string|nil`
-    - Get Zig project root directory, returns `nil` if not in a Zig project
+- None
 
 **Exposed functions**:
 - `build()`
@@ -56,8 +73,8 @@ these functions.
     - Initialize zig-tools.nvim commands on `bufnr` buffer
 
 **Depends on**:
+- `utils` module
 - `config` module
-- `plenary.scandir` module (`nvim-lua/plenary.nvim` plugin)
 - `toggleterm.terminal` module (`akinsho/toggleterm.nvim` plugin)
 
 **Modules that needs this module to work**:

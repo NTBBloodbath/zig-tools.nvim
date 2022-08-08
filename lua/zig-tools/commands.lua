@@ -10,6 +10,8 @@ commands.zls = {}
 ---@diagnostic disable
 local config = _G.zigtools_config
 
+local utils = require("zig-tools.utils")
+
 local terminal = require("toggleterm.terminal").Terminal
 local terminal_opts = {
 	direction = "vertical",
@@ -17,29 +19,9 @@ local terminal_opts = {
 	close_on_exit = false,
 }
 
-local function is_zig_project()
-	local build_file = vim.fn.findfile("build.zig", vim.fn.expand("%:p:h") .. ";")
-	return build_file ~= ""
-end
-
-local function get_zig_project_root()
-	if not is_zig_project() then
-		return nil
-	end
-
-	local build_file = vim.fn.findfile("build.zig", vim.fn.expand("%:p:h") .. ";")
-	local project_root
-	if build_file == "build.zig" then
-		project_root = "./"
-	else
-		project_root = build_file:gsub("/build.zig", "")
-	end
-	return project_root
-end
-
 --- Build current project
 commands.build = function()
-	if not is_zig_project() then
+	if not utils.is_zig_project() then
 		vim.notify(
 			"[zig-tools.nvim] Tried to run `:Zig build` outside a Zig project. "
 				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library "
@@ -70,7 +52,7 @@ commands.run = function(file_mode)
 		cmd = "zig run " .. current_file
 	end
 
-	if cmd == "zig build run" and not is_zig_project() then
+	if cmd == "zig build run" and not utils.is_zig_project() then
 		vim.notify(
 			"[zig-tools.nvim] Tried to run `:Zig run` outside a Zig project. "
 				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library "
@@ -144,7 +126,7 @@ end
 --- Run a specific project build task, open a prompt if `task_name` parameter is `nil`
 ---@param task_name string? An optional task name
 commands.project.task = function(task_name)
-	if not is_zig_project() then
+	if not utils.is_zig_project() then
 		vim.notify(
 			"[zig-tools.nvim] Tried to run `:Zig task` outside a Zig project. "
 				.. "Run `zig init-exe` in your project root directory if your project is an executable or `zig init-lib` if a library "
@@ -154,7 +136,7 @@ commands.project.task = function(task_name)
 		return
 	end
 
-	local project_root = get_zig_project_root()
+	local project_root = utils.get_zig_project_root()
 	local build_tasks = vim.fn.systemlist(string.format("cat %s/build.zig", project_root) .. [[ |
 		rg --only-matching 'b\.step\("\w+",\s".*"\);' |
 		  rg --only-matching '"\w+",\s".*"' |

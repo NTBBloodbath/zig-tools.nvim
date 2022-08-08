@@ -1,14 +1,3 @@
----
-
-title: api
-description: zig-tools.nvim API documentation
-authors: NTBBloodbath
-categories: zig-tools.nvim api reference
-created: 2022-08-07
-version: 0.0.11
----
-
-
 # API
 
 This document has a full reference to internal _and public_ zig-tools.nvim API.

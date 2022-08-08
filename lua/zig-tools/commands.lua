@@ -7,7 +7,6 @@ local commands = {}
 commands.project = {}
 commands.zls = {}
 
----@diagnostic disable
 local config = _G.zigtools_config
 
 local utils = require("zig-tools.utils")
@@ -32,6 +31,7 @@ commands.build = function()
 	end
 
 	local cmd = "zig build"
+	---@diagnostic disable-next-line
 	local flags = config.project.flags.build
 	if not vim.tbl_isempty(flags) then
 		cmd = cmd .. " " .. table.concat(flags, " ")
@@ -147,10 +147,12 @@ commands.project.task = function(task_name)
 	-- to gain some small performance improvements
 	if #build_tasks == 1 then
 		local task_tbl = vim.split(build_tasks[1], ", ")
+	  ---@diagnostic disable-next-line
 		tasks = vim.tbl_extend("keep", tasks, { [task_tbl[1]] = task_tbl[2] })
 	else
 		for _, task in ipairs(build_tasks) do
 			local task_tbl = vim.split(task, ", ")
+	    ---@diagnostic disable-next-line
 			tasks = vim.tbl_extend("keep", tasks, { [task_tbl[1]] = task_tbl[2] })
 		end
 	end
@@ -160,6 +162,7 @@ commands.project.task = function(task_name)
 	if task_name then
 		if vim.tbl_contains(task_names, task_name) then
 			local run_task = terminal:new(vim.tbl_extend("force", terminal_opts, {
+	      ---@diagnostic disable-next-line
 				cmd = "zig build " .. task_name .. " " .. table.concat(config.project.flags.build, " "),
 			}))
 			run_task:toggle(50)
@@ -175,11 +178,13 @@ commands.project.task = function(task_name)
 		vim.ui.select(task_names, {
 			prompt = "Select a task:",
 			format_item = function(item)
+	      ---@diagnostic disable-next-line
 				return item .. ", " .. tasks[item]
 			end,
 		}, function(task)
 			if task then
 				local run_task = terminal:new(vim.tbl_extend("force", terminal_opts, {
+	        ---@diagnostic disable-next-line
 					cmd = "zig build " .. task .. " " .. table.concat(config.project.flags.build, " "),
 				}))
 				run_task:toggle(50)
@@ -198,18 +203,24 @@ commands.init = function(bufnr)
 		run = commands.run,
 	}
 
-	-- TODO: use this table to conditionally add new entries to cmds table
 	local enabled_cmds = {
+	  ---@diagnostic disable-next-line
 		formatter = config.formatter.enable,
+	  ---@diagnostic disable-next-line
 		checker = config.checker.enable,
 		project = {
+	    ---@diagnostic disable-next-line
 			tasks = config.project.build_tasks,
-			live_reload = config.project.live_reload,
+	    ---@diagnostic disable-next-line
+			live_reload = config.project.live_reload, -- Not implemented yet
 		},
-		integrations = {
+		integrations = { -- Not implemented yet
+	    ---@diagnostic disable-next-line
 			package_managers = #config.integrations.package_managers ~= 0,
 			zls = {
+	      ---@diagnostic disable-next-line
 				hints = config.integrations.zls.hints,
+	      ---@diagnostic disable-next-line
 				management = config.integrations.zls.management.enable,
 			},
 		},
@@ -217,12 +228,15 @@ commands.init = function(bufnr)
 
 	-- Add opt-in commands if their features are enabled
 	if enabled_cmds.formatter then
+	  ---@diagnostic disable-next-line
 		cmds = vim.tbl_extend("keep", cmds, { fmt = commands.fmt })
 	end
 	if enabled_cmds.checker then
+	  ---@diagnostic disable-next-line
 		cmds = vim.tbl_extend("keep", cmds, { check = commands.check })
 	end
 	if enabled_cmds.project.tasks then
+	  ---@diagnostic disable-next-line
 		cmds = vim.tbl_extend("keep", cmds, { task = commands.project.task })
 	end
 	-- if enabled_cmds.project.live_reload then
@@ -244,6 +258,7 @@ commands.init = function(bufnr)
 		table.remove(args, 1)
 
 		if vim.tbl_contains(vim.tbl_keys(cmds), subcmd) then
+	    ---@diagnostic disable-next-line
 			local command = cmds[subcmd]
 			if subcmd == "build" then
 				command()

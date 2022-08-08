@@ -1,5 +1,8 @@
 # zig-tools.nvim
 
+> **IMPORTANT**: This repository is going to be moved to [Codeberg](https://codeberg.org/NTBBloodbath/zig-tools.nvim),
+> please use that origin instead.
+
 zig-tools.nvim is a Neovim (>= 0.7.x) plugin that adds some Zig-specific features to Neovim. WIP.
 
 zig-tools.nvim aims to provide Zig integration to your favorite editor, and that integration is a

@@ -122,11 +122,11 @@ commands.check = function(files)
 		local check = terminal:new(vim.tbl_extend("force", terminal_opts, {
 			cmd = "zig ast-check " .. files[1],
 		}))
-		check:toggle()
+		check:toggle(50)
 	else
 		-- We spawn a default terminal with no custom command to send them through `terminal:send(cmd)`
 		local check = terminal:new(terminal_opts)
-		check:toggle()
+		check:toggle(50)
 		for _, file in ipairs(files) do
 			check:send("zig ast-check " .. file)
 		end

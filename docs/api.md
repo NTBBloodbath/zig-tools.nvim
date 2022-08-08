@@ -42,6 +42,8 @@ This module exposes some utility functions that are specific to Zig development 
     - Check if we are in a Zig project workspace
 - `get_zig_project_root() -> string|nil`
     - Get Zig project root directory, returns `nil` if not in a Zig project
+- `get_source_files() -> table`
+    - Get Zig project workspace source code files and `build.zig`
 
 **Depends on**:
 - `plenary.scandir` module (`nvim-lua/plenary.nvim` plugin)

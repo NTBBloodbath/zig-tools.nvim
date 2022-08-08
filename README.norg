@@ -46,6 +46,7 @@ version: 0.0.11
 
 *** Neovim
     - [akinsho/toggleterm.nvim]{https://github.com/akinsho/toggleterm.nvim}
+    - [nvim-lua/plenary.nvim]{https://github.com/nvim-lua/plenary.nvim}
 
 ** Installation
    You can use your favorite plugins manager to get zig-tools.nvim, we are going to use packer here:
@@ -58,7 +59,18 @@ version: 0.0.11
        -- Initialize with default config
        require("zig-tools").setup()
      end,
-     requires = { "akinsho/toggleterm.nvim" }
+     requires = {
+       {
+         "akinsho/toggleterm.nvim",
+         config = function()
+           require("toggleterm").setup()
+         end,
+       },
+       {
+         "nvim-lua/plenary.nvim",
+         module_pattern = "plenary.*"
+       }
+     },
    })
    @end
 

@@ -57,6 +57,7 @@ these functions.
 
 **Depends on**:
 - `config` module
+- `plenary.scandir` module (`nvim-lua/plenary.nvim` plugin)
 - `toggleterm.terminal` module (`akinsho/toggleterm.nvim` plugin)
 
 **Modules that needs this module to work**:

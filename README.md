@@ -45,6 +45,7 @@ _and run_ your project, live _automatic_ rebuild, add/remove/update dependencies
 ### Neovim
 
 - [akinsho/toggleterm.nvim](https://github.com/akinsho/toggleterm.nvim)
+- [nvim-lua/plenary.nvim](https://github.com/nvim-lua/plenary.nvim)
 
 
 ## Installation
@@ -59,7 +60,18 @@ use({
     -- Initialize with default config
     require("zig-tools").setup()
   end,
-  requires = { "akinsho/toggleterm.nvim" }
+  requires = {
+    {
+      "akinsho/toggleterm.nvim",
+      config = function()
+        require("toggleterm").setup()
+      end,
+    },
+    {
+      "nvim-lua/plenary.nvim",
+      module_pattern = "plenary.*"
+    }
+  },
 })
 ```
 

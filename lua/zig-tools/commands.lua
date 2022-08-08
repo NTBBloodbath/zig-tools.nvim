@@ -69,11 +69,16 @@ commands.run = function(file_mode)
 end
 
 --- Format Zig source code files
----@param files table Files to be formatted, current buffer is used if files table is empty
+---@param files table Files to be formatted, all project source files are used if files table is empty
 commands.fmt = function(files)
-	-- If no files were passed as argumentd then use current buffer
+	-- If no files were passed as argumentd then format all project source files
 	if vim.tbl_isempty(files) then
-		table.insert(files, vim.api.nvim_buf_get_name(0))
+		files = utils.get_source_files()
+	end
+
+	-- If only files table value is `file` then use current buffer
+	if files[1] == "file" then
+		files[1] = vim.api.nvim_buf_get_name(0)
 	end
 
 	-- Avoid using a for loop and iterating over files table if it only contains one file
@@ -84,13 +89,13 @@ commands.fmt = function(files)
 			close_on_exit = true,
 		}))
 		fmt:spawn()
-		fmt:toggle()
+		fmt:toggle(30)
 	else
 		-- We spawn a default terminal with no custom command to send them through `terminal:send(cmd)`
 		local fmt = terminal:new(vim.tbl_extend("force", terminal_opts, {
 			close_on_exit = true,
 		}))
-		fmt:toggle()
+		fmt:toggle(30)
 		for _, file in ipairs(files) do
 			fmt:send("zig fmt " .. file)
 		end
@@ -99,11 +104,16 @@ commands.fmt = function(files)
 end
 
 --- Check for compilation-time errors in Zig source code files
----@param files table Files to be checked, current buffer is used if files table is empty
+---@param files table Files to be checked,all project source files are used if files table is empty
 commands.check = function(files)
-	-- If no files were passed as argumentd then use current buffer
+	-- If no files were passed as argumentd then format all project source files
 	if vim.tbl_isempty(files) then
-		table.insert(files, vim.api.nvim_buf_get_name(0))
+		files = utils.get_source_files()
+	end
+
+	-- If only files table value is `file` then use current buffer
+	if files[1] == "file" then
+		files[1] = vim.api.nvim_buf_get_name(0)
 	end
 
 	-- Avoid using a for loop and iterating over files table if it only contains one file
@@ -147,12 +157,12 @@ commands.project.task = function(task_name)
 	-- to gain some small performance improvements
 	if #build_tasks == 1 then
 		local task_tbl = vim.split(build_tasks[1], ", ")
-	  ---@diagnostic disable-next-line
+		---@diagnostic disable-next-line
 		tasks = vim.tbl_extend("keep", tasks, { [task_tbl[1]] = task_tbl[2] })
 	else
 		for _, task in ipairs(build_tasks) do
 			local task_tbl = vim.split(task, ", ")
-	    ---@diagnostic disable-next-line
+			---@diagnostic disable-next-line
 			tasks = vim.tbl_extend("keep", tasks, { [task_tbl[1]] = task_tbl[2] })
 		end
 	end
@@ -162,7 +172,7 @@ commands.project.task = function(task_name)
 	if task_name then
 		if vim.tbl_contains(task_names, task_name) then
 			local run_task = terminal:new(vim.tbl_extend("force", terminal_opts, {
-	      ---@diagnostic disable-next-line
+				---@diagnostic disable-next-line
 				cmd = "zig build " .. task_name .. " " .. table.concat(config.project.flags.build, " "),
 			}))
 			run_task:toggle(50)
@@ -178,13 +188,13 @@ commands.project.task = function(task_name)
 		vim.ui.select(task_names, {
 			prompt = "Select a task:",
 			format_item = function(item)
-	      ---@diagnostic disable-next-line
+				---@diagnostic disable-next-line
 				return item .. ", " .. tasks[item]
 			end,
 		}, function(task)
 			if task then
 				local run_task = terminal:new(vim.tbl_extend("force", terminal_opts, {
-	        ---@diagnostic disable-next-line
+					---@diagnostic disable-next-line
 					cmd = "zig build " .. task .. " " .. table.concat(config.project.flags.build, " "),
 				}))
 				run_task:toggle(50)
@@ -204,23 +214,23 @@ commands.init = function(bufnr)
 	}
 
 	local enabled_cmds = {
-	  ---@diagnostic disable-next-line
+		---@diagnostic disable-next-line
 		formatter = config.formatter.enable,
-	  ---@diagnostic disable-next-line
+		---@diagnostic disable-next-line
 		checker = config.checker.enable,
 		project = {
-	    ---@diagnostic disable-next-line
+			---@diagnostic disable-next-line
 			tasks = config.project.build_tasks,
-	    ---@diagnostic disable-next-line
+			---@diagnostic disable-next-line
 			live_reload = config.project.live_reload, -- Not implemented yet
 		},
 		integrations = { -- Not implemented yet
-	    ---@diagnostic disable-next-line
+			---@diagnostic disable-next-line
 			package_managers = #config.integrations.package_managers ~= 0,
 			zls = {
-	      ---@diagnostic disable-next-line
+				---@diagnostic disable-next-line
 				hints = config.integrations.zls.hints,
-	      ---@diagnostic disable-next-line
+				---@diagnostic disable-next-line
 				management = config.integrations.zls.management.enable,
 			},
 		},
@@ -228,15 +238,15 @@ commands.init = function(bufnr)
 
 	-- Add opt-in commands if their features are enabled
 	if enabled_cmds.formatter then
-	  ---@diagnostic disable-next-line
+		---@diagnostic disable-next-line
 		cmds = vim.tbl_extend("keep", cmds, { fmt = commands.fmt })
 	end
 	if enabled_cmds.checker then
-	  ---@diagnostic disable-next-line
+		---@diagnostic disable-next-line
 		cmds = vim.tbl_extend("keep", cmds, { check = commands.check })
 	end
 	if enabled_cmds.project.tasks then
-	  ---@diagnostic disable-next-line
+		---@diagnostic disable-next-line
 		cmds = vim.tbl_extend("keep", cmds, { task = commands.project.task })
 	end
 	-- if enabled_cmds.project.live_reload then
@@ -258,7 +268,7 @@ commands.init = function(bufnr)
 		table.remove(args, 1)
 
 		if vim.tbl_contains(vim.tbl_keys(cmds), subcmd) then
-	    ---@diagnostic disable-next-line
+			---@diagnostic disable-next-line
 			local command = cmds[subcmd]
 			if subcmd == "build" then
 				command()
@@ -305,3 +315,5 @@ commands.init = function(bufnr)
 end
 
 return commands
+
+-- vim: foldlevel=99

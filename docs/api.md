@@ -1,3 +1,14 @@
+---
+
+title: api
+description: zig-tools.nvim API documentation
+authors: NTBBloodbath
+categories: zig-tools.nvim api reference
+created: 2022-08-07
+version: 0.0.11
+---
+
+
 # API
 
 This document has a full reference to internal _and public_ zig-tools.nvim API.
@@ -162,7 +173,7 @@ Compile and run current project or current `file`.
 Format Zig source code files.
 
 **Takes arguments?**
-- Any (optional, current file if no arguments were passed)
+- Any (optional, all current project source code files if no arguments were passed)
   
 **Requires a feature?**
 - `config.formatter.enable = true`
@@ -172,11 +183,17 @@ Format Zig source code files.
 
 **Examples**:
 ```vim
-" Format current file
+" Format all current project source code files + build.zig
 :Zig fmt
+
+" Format current file (literal file word)
+:Zig fmt file
 
 " Format X files
 :Zig fmt file1.zig file2.zig ...
+
+" Format current file and X additional files
+:Zig fmt file file1.zig file2.zig ...
 ```
 
 
@@ -185,7 +202,7 @@ Format Zig source code files.
 Check for compilation-time errors in Zig source code files.
 
 **Takes arguments?**
-- Any (optional, current file if no arguments were passed)
+- Any (optional, all current project source code files if no arguments were passed)
   
 **Requires a feature?**
 - `config.checker.enable = true`
@@ -195,11 +212,17 @@ Check for compilation-time errors in Zig source code files.
 
 **Examples**:
 ```vim
-" Check current file
+" Check all current project source code files + build.zig
 :Zig check
+
+" Check current file (literal file word)
+:Zig check file
 
 " Check X files
 :Zig check file1.zig file2.zig ...
+
+" Check current file and X additional files
+:Zig check file file1.zig file2.zig ...
 ```
 
 

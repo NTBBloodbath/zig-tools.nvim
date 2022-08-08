@@ -228,6 +228,7 @@ commands.init = function(bufnr)
 			---@diagnostic disable-next-line
 			package_managers = #config.integrations.package_managers ~= 0,
 			zls = {
+			  -- NOTE: this is not going to be implemented in a while, see config.lua comments
 				---@diagnostic disable-next-line
 				hints = config.integrations.zls.hints,
 				---@diagnostic disable-next-line

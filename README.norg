@@ -34,8 +34,8 @@ version: 0.0.11
    -- Run your additional build tasks (e.g. `zig build tests`).
    - opt-in Zig third-party dependencies managers integration (add, remove and update your
      zigmod/gyro dependencies on the fly!).
-   - opt-in LSP integration (with support for inlay hints, thanks to rust-tools.nvim author). See
-     {** FAQ} if you have questions about this integration.
+   - opt-in LSP integration (with support for inlay hints (maybe? seems to not work with zls yet),
+     thanks to rust-tools.nvim author). See {** FAQ} if you have questions about this integration.
 
 ** Requirements
 *** System-wide
@@ -147,7 +147,7 @@ version: 0.0.11
        zls = {
          --- Enable inlay hints
          ---@type boolean
-         hints = true,
+         hints = false,
          --- Manage installation
          ---@type table
          management = {

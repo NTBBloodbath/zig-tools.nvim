@@ -28,8 +28,8 @@ _and run_ your project, live _automatic_ rebuild, add/remove/update dependencies
     - Run your additional build tasks (e.g. `zig build tests`).
 - opt-in Zig third-party dependencies managers integration (add, remove and update your
   zigmod/gyro dependencies on the fly!).
-- opt-in LSP integration (with support for inlay hints, thanks to rust-tools.nvim author). See
-  [FAQ](#faq) if you have questions about this integration.
+- opt-in LSP integration (with support for inlay hints (maybe? seems to not work with zls yet),
+  thanks to rust-tools.nvim author). See [FAQ](#faq) if you have questions about this integration.
 
 
 ## Requirements
@@ -150,7 +150,7 @@ _G.zigtools_config = {
     zls = {
       --- Enable inlay hints
       ---@type boolean
-      hints = true,
+      hints = false,
       --- Manage installation
       ---@type table
       management = {

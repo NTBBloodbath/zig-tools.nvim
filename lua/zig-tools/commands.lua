@@ -7,16 +7,9 @@ local commands = {}
 commands.project = {}
 commands.zls = {}
 
-local config = _G.zigtools_config
-
 local utils = require("zig-tools.utils")
 
 local terminal = require("toggleterm.terminal").Terminal
-local terminal_opts = {
-	direction = "vertical",
-	auto_scroll = true,
-	close_on_exit = false,
-}
 
 --- Build current project
 commands.build = function()
@@ -30,6 +23,8 @@ commands.build = function()
 		return
 	end
 
+	local config = _G.zigtools_config
+
 	local cmd = "zig build"
 	---@diagnostic disable-next-line
 	local flags = config.project.flags.build
@@ -37,7 +32,7 @@ commands.build = function()
 		cmd = cmd .. " " .. table.concat(flags, " ")
 	end
 
-	local build = terminal:new(vim.tbl_extend("force", terminal_opts, {
+	local build = terminal:new(vim.tbl_extend("force", config.terminal, {
 		cmd = cmd,
 	}))
 	build:toggle(50)
@@ -62,7 +57,8 @@ commands.run = function(file_mode)
 		return
 	end
 
-	local run = terminal:new(vim.tbl_extend("force", terminal_opts, {
+	local config = _G.zigtools_config
+	local run = terminal:new(vim.tbl_extend("force", config.terminal, {
 		cmd = cmd,
 	}))
 	run:toggle(50)
@@ -84,7 +80,7 @@ commands.fmt = function(files)
 	-- Avoid using a for loop and iterating over files table if it only contains one file
 	-- to gain some small performance improvements
 	if #files == 1 then
-		local fmt = terminal:new(vim.tbl_extend("force", terminal_opts, {
+		local fmt = terminal:new(vim.tbl_extend("force", config.terminal, {
 			cmd = "zig fmt " .. files[1],
 			close_on_exit = true,
 		}))
@@ -92,7 +88,7 @@ commands.fmt = function(files)
 		fmt:toggle(30)
 	else
 		-- We spawn a default terminal with no custom command to send them through `terminal:send(cmd)`
-		local fmt = terminal:new(vim.tbl_extend("force", terminal_opts, {
+		local fmt = terminal:new(vim.tbl_extend("force", config.terminal, {
 			close_on_exit = true,
 		}))
 		fmt:toggle(30)
@@ -119,13 +115,13 @@ commands.check = function(files)
 	-- Avoid using a for loop and iterating over files table if it only contains one file
 	-- to gain some small performance improvements
 	if #files == 1 then
-		local check = terminal:new(vim.tbl_extend("force", terminal_opts, {
+		local check = terminal:new(vim.tbl_extend("force", config.terminal, {
 			cmd = "zig ast-check " .. files[1],
 		}))
 		check:toggle(50)
 	else
 		-- We spawn a default terminal with no custom command to send them through `terminal:send(cmd)`
-		local check = terminal:new(terminal_opts)
+		local check = terminal:new(config.terminal)
 		check:toggle(50)
 		for _, file in ipairs(files) do
 			check:send("zig ast-check " .. file)
@@ -171,14 +167,16 @@ commands.project.task = function(task_name)
 	local task_names = vim.tbl_keys(tasks)
 	if task_name then
 		if vim.tbl_contains(task_names, task_name) then
-			local run_task = terminal:new(vim.tbl_extend("force", terminal_opts, {
+			local run_task = terminal:new(vim.tbl_extend("force", config.terminal, {
 				---@diagnostic disable-next-line
 				cmd = "zig build " .. task_name .. " " .. table.concat(config.project.flags.build, " "),
 			}))
 			run_task:toggle(50)
 		else
-			local error_msg =
-				string.format("[zig-tools.nvim] Invalid task '%s' provided. Available tasks:\n", task_name)
+			local error_msg = string.format(
+				"[zig-tools.nvim] Invalid task '%s' provided. Available tasks:\n",
+				task_name
+			)
 			for task, desc in pairs(tasks) do
 				error_msg = error_msg .. string.format("- %s, %s\n", task, desc)
 			end
@@ -193,7 +191,7 @@ commands.project.task = function(task_name)
 			end,
 		}, function(task)
 			if task then
-				local run_task = terminal:new(vim.tbl_extend("force", terminal_opts, {
+				local run_task = terminal:new(vim.tbl_extend("force", config.terminal, {
 					---@diagnostic disable-next-line
 					cmd = "zig build " .. task .. " " .. table.concat(config.project.flags.build, " "),
 				}))
@@ -208,6 +206,7 @@ end
 --- Initialize zig-tools.nvim commands on `bufnr` buffer
 ---@param bufnr number Zig buffer number
 commands.init = function(bufnr)
+	local config = _G.zigtools_config
 	local cmds = {
 		build = commands.build,
 		run = commands.run,
@@ -228,7 +227,7 @@ commands.init = function(bufnr)
 			---@diagnostic disable-next-line
 			package_managers = #config.integrations.package_managers ~= 0,
 			zls = {
-			  -- NOTE: this is not going to be implemented in a while, see config.lua comments
+				-- NOTE: this is not going to be implemented in a while, see config.lua comments
 				---@diagnostic disable-next-line
 				hints = config.integrations.zls.hints,
 				---@diagnostic disable-next-line

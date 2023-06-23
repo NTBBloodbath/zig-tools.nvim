@@ -9,10 +9,10 @@ local config = require("zig-tools.config")
 local autocmds = require("zig-tools.autocmds")
 
 zig_tools.setup = function(opts)
-  config.set(opts or {})
+	config.set(opts or {})
 
-  -- Set up zig-tools.nvim autocommand to set up `:Zig` command
-  autocmds.setup()
+	-- Set up zig-tools.nvim autocommand to set up `:Zig` command
+	autocmds.setup()
 end
 
 return zig_tools

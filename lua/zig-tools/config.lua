@@ -93,6 +93,12 @@ _G.zigtools_config = {
 			},
 		},
 	},
+
+	terminal = {
+		direction = "vertical",
+		auto_scroll = true,
+		close_on_exit = false,
+	},
 }
 
 --- Set zig-tools.nvim global configuration options
